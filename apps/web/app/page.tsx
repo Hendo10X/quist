@@ -1,19 +1,35 @@
-import { Button } from "@workspace/ui/components/button"
+import Link from "next/link"
+
+import { buttonVariants } from "@workspace/ui/components/button"
+import { cn } from "@workspace/ui/lib/utils"
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="text-muted-foreground font-mono text-xs">
-          (Press <kbd>d</kbd> to toggle dark mode)
+    <main className="flex min-h-svh flex-col items-center justify-center px-6 text-center">
+      <div className="flex max-w-xl flex-col items-center gap-6">
+        <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+          Quist
+        </span>
+        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          The search engine for AI-solved problems.
+        </h1>
+        <p className="text-sm leading-relaxed text-balance text-muted-foreground">
+          Developers solve a bug with Claude, ChatGPT, or Gemini and the
+          knowledge disappears. Quist keeps it — searchable, structured, and
+          confirmed to actually work.
+        </p>
+        <div className="mt-2 flex items-center gap-3">
+          <Link href="/sign-up" className={cn(buttonVariants({ size: "lg" }))}>
+            Get started
+          </Link>
+          <Link
+            href="/sign-in"
+            className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
+          >
+            Sign in
+          </Link>
         </div>
       </div>
-    </div>
+    </main>
   )
 }
