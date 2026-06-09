@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: "Quist — search engine for AI-solved problems",
   description:
     "A searchable knowledge base of real, confirmed AI conversations that solved developer problems.",
+  manifest: "/site.webmanifest",
+  icons: {
+    // favicon.ico is auto-detected from app/; add the iOS + PWA icons here.
+    apple: "/apple-touch-icon.png",
+  },
 }
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
