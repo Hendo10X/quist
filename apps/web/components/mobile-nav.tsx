@@ -6,11 +6,6 @@ import { usePathname } from "next/navigation"
 import { Cancel01Icon, Menu01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@workspace/ui/components/avatar"
 import { buttonVariants } from "@workspace/ui/components/button"
 import {
   Sheet,
@@ -22,24 +17,15 @@ import {
 import { cn } from "@workspace/ui/lib/utils"
 
 import { SignOutButton } from "@/components/sign-out-button"
+import { UserAvatar } from "@/components/user-avatar"
 import type { NavLink } from "@/lib/nav-links"
-
-function initialsOf(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase()
-}
 
 export function MobileNav({
   links,
   user,
 }: {
   links: NavLink[]
-  user?: { name: string; image: string | null }
+  user?: { id: string; name: string; image: string | null }
 }) {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
@@ -97,15 +83,19 @@ export function MobileNav({
         <div className="mt-auto border-t border-border pt-4">
           {user ? (
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <Avatar>
-                  {user.image ? (
-                    <AvatarImage src={user.image} alt={user.name} />
-                  ) : null}
-                  <AvatarFallback>{initialsOf(user.name)}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-foreground">{user.name}</span>
-              </div>
+              <Link
+                href="/profile"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-muted/40"
+              >
+                <UserAvatar name={user.name} seed={user.id} image={user.image} />
+                <div className="flex flex-col">
+                  <span className="text-sm text-foreground">{user.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    View profile
+                  </span>
+                </div>
+              </Link>
               <SignOutButton />
             </div>
           ) : (

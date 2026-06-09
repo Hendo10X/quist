@@ -21,6 +21,7 @@
     "@workspace/ui": "workspace:*",
     "ai": "^6.0.198",
     "better-auth": "^1.6.15",
+    "boring-avatars": "^2.0.4",
     "dotenv": "^17.4.2",
     "hono": "^4.12.24",
     "next": "16.2.6",
