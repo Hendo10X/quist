@@ -11,6 +11,9 @@ import { buttonVariants } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 
 import { CaptureDemo } from "@/components/capture-demo"
+import { CodeDemo } from "@/components/code-demo"
+import { ExploreDemo } from "@/components/explore-demo"
+import { Faq } from "@/components/faq"
 import { LandingHeader } from "@/components/landing-header"
 import { SearchDemo } from "@/components/search-demo"
 import { SiteFooter } from "@/components/site-footer"
@@ -90,7 +93,7 @@ export default function Page() {
           <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 sm:flex-row sm:justify-between sm:gap-12">
             <p className="max-w-xs text-center text-sm leading-relaxed text-balance text-muted-foreground sm:text-left">
               500+ solutions solved with Claude, GPT, Gemini, Mistral, Grok,
-              Perplexity and more — shared by indie devs worldwide.
+              Perplexity and more shared by indie devs worldwide.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-5">
               {LOGOS.map((logo) => (
@@ -117,7 +120,7 @@ export default function Page() {
               </h2>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 Every day, developers ask the same questions. They get an AI
-                answer, use it, and move on — and the solution disappears. The
+                answer, use it, and move on and the solution disappears. The
                 next developer spends an hour asking for the same thing.
               </p>
               <p className="text-sm font-medium text-foreground">
@@ -126,6 +129,41 @@ export default function Page() {
             </div>
 
             <CaptureDemo />
+          </div>
+        </section>
+
+        {/* Explore by tag — discovery layer */}
+        <section id="tags" className="scroll-mt-20 px-6 py-20 sm:py-28">
+          <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-16">
+            <ExploreDemo />
+            <div className="flex flex-col gap-4 md:order-first">
+              <h2 className="font-display text-3xl tracking-tight text-balance sm:text-4xl">
+                Don&apos;t know what to search for? Explore.
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Land on Quist without a query and browse by tag — &ldquo;show me
+                everything tagged CORS&rdquo; or &ldquo;all Next.js
+                solutions.&rdquo; It&apos;s how you discover fixes you
+                didn&apos;t know existed.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Copy-paste ready code */}
+        <section className="px-6 py-20 sm:py-28">
+          <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-16">
+            <CodeDemo />
+            <div className="flex flex-col gap-4">
+              <h2 className="font-display text-3xl tracking-tight text-balance sm:text-4xl">
+                The exact code that worked.
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Every answer is copy-paste ready, with syntax highlighting and a
+                one-click copy. You also see which model produced it and when,
+                so you know how fresh the fix is.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -153,6 +191,16 @@ export default function Page() {
                 </p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="px-6 py-20 sm:py-28">
+          <div className="mx-auto max-w-2xl">
+            <h2 className="font-display mb-8 text-center text-4xl tracking-tight text-balance sm:text-5xl">
+              Questions
+            </h2>
+            <Faq />
           </div>
         </section>
 

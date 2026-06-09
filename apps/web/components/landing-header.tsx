@@ -4,12 +4,14 @@ import { buttonVariants } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 
 import { MobileNav } from "@/components/mobile-nav"
+import { TagsMenu } from "@/components/tags-menu"
 import type { NavLink } from "@/lib/nav-links"
 
+// `/share` is auth-gated (redirects to sign-in), so "Share a solution" only
+// works once signed in.
 const LANDING_LINKS: NavLink[] = [
   { href: "/browse", label: "Browse" },
-  { href: "#models", label: "Models" },
-  { href: "#preview", label: "Preview" },
+  { href: "/share", label: "Share a solution" },
 ]
 
 // Marketing nav for the landing page only — always shows the sign-in CTAs,
@@ -34,6 +36,7 @@ export function LandingHeader() {
               {link.label}
             </Link>
           ))}
+          <TagsMenu />
         </nav>
       </div>
 
