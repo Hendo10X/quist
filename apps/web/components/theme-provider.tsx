@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { MotionConfig } from "motion/react"
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
 function ThemeProvider({
@@ -15,8 +16,11 @@ function ThemeProvider({
       disableTransitionOnChange
       {...props}
     >
-      <ThemeHotkey />
-      {children}
+      {/* Respect the OS "reduce motion" setting across all animations. */}
+      <MotionConfig reducedMotion="user">
+        <ThemeHotkey />
+        {children}
+      </MotionConfig>
     </NextThemesProvider>
   )
 }

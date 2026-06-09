@@ -31,3 +31,8 @@ export const ajSignup = aj.withRule(
 export const ajSignin = aj.withRule(
   slidingWindow({ mode: "LIVE", interval: "10m", max: 10 })
 )
+
+// Transcript parsing hits a paid LLM — rate limit it to control cost/abuse.
+export const ajParse = aj.withRule(
+  slidingWindow({ mode: "LIVE", interval: "10m", max: 15 })
+)

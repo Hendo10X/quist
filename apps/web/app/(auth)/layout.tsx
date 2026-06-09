@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+import { MotionReveal } from "@/components/motion"
 import { auth } from "@/lib/auth"
 
 export default async function AuthLayout({
@@ -24,7 +25,7 @@ export default async function AuthLayout({
         >
           Quist
         </Link>
-        {children}
+        <MotionReveal delay={0.05}>{children}</MotionReveal>
       </div>
     </main>
   )

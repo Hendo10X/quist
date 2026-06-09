@@ -6,6 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Button } from "@workspace/ui/components/button"
 
+import { Spokes } from "@/components/spokes"
 import { signIn } from "@/lib/auth-client"
 
 export function GithubButton() {
@@ -32,7 +33,11 @@ export function GithubButton() {
       disabled={isPending}
       className="w-full"
     >
-      <HugeiconsIcon icon={GithubIcon} className="size-4" strokeWidth={2} />
+      {isPending ? (
+        <Spokes className="size-4" />
+      ) : (
+        <HugeiconsIcon icon={GithubIcon} className="size-4" strokeWidth={2} />
+      )}
       Continue with GitHub
     </Button>
   )

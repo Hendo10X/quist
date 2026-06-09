@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 
 import { Button } from "@workspace/ui/components/button"
 
+import { Spokes } from "@/components/spokes"
 import { signOut } from "@/lib/auth-client"
 
 export function SignOutButton() {
@@ -20,7 +21,14 @@ export function SignOutButton() {
 
   return (
     <Button variant="outline" onClick={handleSignOut} disabled={isPending}>
-      {isPending ? "Signing out…" : "Sign out"}
+      {isPending ? (
+        <>
+          <Spokes className="size-3.5" />
+          Signing out…
+        </>
+      ) : (
+        "Sign out"
+      )}
     </Button>
   )
 }

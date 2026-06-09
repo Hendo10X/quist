@@ -12,18 +12,23 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^3.0.39",
     "@arcjet/next": "^1.4.0",
     "@hugeicons/core-free-icons": "^4.2.0",
     "@hugeicons/react": "^1.1.6",
     "@workspace/db": "workspace:*",
+    "@workspace/redis": "workspace:*",
     "@workspace/ui": "workspace:*",
+    "ai": "^6.0.198",
     "better-auth": "^1.6.15",
     "dotenv": "^17.4.2",
+    "hono": "^4.12.24",
     "next": "16.2.6",
     "next-themes": "^0.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.12.4",
+    "shiki": "^4.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
