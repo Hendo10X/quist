@@ -1,8 +1,10 @@
+import { BackButton } from "@/components/back-button"
 import { ShareSolution } from "@/components/share-solution"
 
 export default function SharePage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-10">
+      <BackButton className="mb-4 -ml-2" />
       <div className="mb-6 flex flex-col gap-1">
         <h1 className="text-xl font-semibold tracking-tight">
           Share a solution

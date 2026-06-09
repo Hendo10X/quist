@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { db } from "@workspace/db"
 import { Badge } from "@workspace/ui/components/badge"
 
+import { BackButton } from "@/components/back-button"
 import { CodeBlock } from "@/components/code-block"
 import { ModelBadge } from "@/components/model-badge"
 import { MotionReveal } from "@/components/motion"
@@ -49,6 +50,7 @@ export default async function SolutionPage({
       <SiteHeader />
 
       <article className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
+        <BackButton className="-ml-2" />
         <MotionReveal className="flex flex-col gap-3">
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
             {solution.questionTitle}
