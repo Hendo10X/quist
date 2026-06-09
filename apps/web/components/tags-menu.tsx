@@ -27,7 +27,7 @@ const TAG_GROUPS = [
 export function TagsMenu() {
   return (
     <Popover.Root>
-      <Popover.Trigger className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors outline-none hover:text-foreground data-[popup-open]:text-foreground">
+      <Popover.Trigger className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors outline-none hover:text-foreground data-popup-open:text-foreground">
         Tags
         <HugeiconsIcon
           icon={ArrowDown01Icon}
@@ -37,7 +37,7 @@ export function TagsMenu() {
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner side="bottom" align="start" sideOffset={10}>
-          <Popover.Popup className="z-50 w-[min(42rem,calc(100vw-2rem))] origin-[var(--transform-origin)] rounded-xl border border-border bg-popover p-5 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 outline-none data-[ending-style]:scale-[0.98] data-[ending-style]:opacity-0 data-[starting-style]:scale-[0.98] data-[starting-style]:opacity-0">
+          <Popover.Popup className="z-50 w-[min(42rem,calc(100vw-2rem))] origin-(--transform-origin) rounded-xl border border-border bg-popover p-5 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 outline-none data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-starting-style:scale-[0.98] data-starting-style:opacity-0">
             <p className="mb-4 text-xs text-muted-foreground">
               Browse the knowledge base by topic — no search query needed.
             </p>
