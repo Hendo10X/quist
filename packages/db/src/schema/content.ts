@@ -1,5 +1,7 @@
-import { relations } from "drizzle-orm"
+import { relations, sql } from "drizzle-orm"
 import {
+  customType,
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -11,6 +13,13 @@ import {
 
 import { user } from "./auth"
 
+// Postgres full-text search vector. Drizzle has no native tsvector type.
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector"
+  },
+})
+
 export const sourceModel = pgEnum("source_model", [
   "claude",
   "chatgpt",
@@ -18,18 +27,26 @@ export const sourceModel = pgEnum("source_model", [
   "other",
 ])
 
-export const solutions = pgTable("solutions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  questionTitle: text("question_title").notNull(),
-  questionBody: text("question_body").notNull(),
-  answerBody: text("answer_body").notNull(),
-  sourceModel: sourceModel("source_model").notNull().default("other"),
-  rawTranscript: text("raw_transcript").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-})
+export const solutions = pgTable(
+  "solutions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    questionTitle: text("question_title").notNull(),
+    questionBody: text("question_body").notNull(),
+    answerBody: text("answer_body").notNull(),
+    sourceModel: sourceModel("source_model").notNull().default("other"),
+    rawTranscript: text("raw_transcript").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    // Precomputed, STORED weighted search vector: title => A, bodies => B.
+    searchVector: tsvector("search_vector").generatedAlwaysAs(
+      sql`setweight(to_tsvector('english', coalesce(question_title, '')), 'A') || setweight(to_tsvector('english', coalesce(question_body, '') || ' ' || coalesce(answer_body, '')), 'B')`
+    ),
+  },
+  (table) => [index("solutions_search_idx").using("gin", table.searchVector)]
+)
 
 export const tags = pgTable("tags", {
   id: uuid("id").primaryKey().defaultRandom(),

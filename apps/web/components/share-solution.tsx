@@ -17,6 +17,7 @@ import {
   createSolutionAction,
 } from "@/app/(app)/share/actions"
 import { FormError, MotionReveal, SuccessCheck } from "@/components/motion"
+import { Spokes } from "@/components/spokes"
 import {
   SOURCE_MODELS,
   type ParsedSolution,
@@ -173,7 +174,14 @@ export function ShareSolution() {
           disabled={isPending || transcript.trim().length < 40}
           className="self-start"
         >
-          {isPending ? "Parsing…" : "Parse with AI"}
+          {isPending ? (
+            <>
+              <Spokes className="size-3.5" />
+              Parsing…
+            </>
+          ) : (
+            "Parse with AI"
+          )}
         </Button>
       </MotionReveal>
     )
@@ -315,7 +323,14 @@ export function ShareSolution() {
 
       <div className="flex items-center gap-3">
         <Button size="lg" onClick={handlePublish} disabled={isPending}>
-          {isPending ? "Publishing…" : "Publish solution"}
+          {isPending ? (
+            <>
+              <Spokes className="size-3.5" />
+              Publishing…
+            </>
+          ) : (
+            "Publish solution"
+          )}
         </Button>
         <Button
           size="lg"

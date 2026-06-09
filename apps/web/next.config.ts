@@ -10,7 +10,7 @@ config({
 })
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@workspace/ui", "@workspace/db"],
+  transpilePackages: ["@workspace/ui", "@workspace/db", "@workspace/redis"],
 }
 
 export default nextConfig

@@ -5,20 +5,15 @@ import { usePathname } from "next/navigation"
 
 import { cn } from "@workspace/ui/lib/utils"
 
-const AUTHED_LINKS = [
-  { href: "/dashboard", label: "My solutions" },
-  { href: "/browse", label: "Browse" },
-  { href: "/share", label: "Share" },
-]
+import { AUTHED_LINKS, GUEST_LINKS } from "@/lib/nav-links"
 
-const GUEST_LINKS = [{ href: "/browse", label: "Browse" }]
-
+// Hidden below `sm` — mobile uses the hamburger sheet (MobileNav) instead.
 export function MainNav({ authed = true }: { authed?: boolean }) {
   const pathname = usePathname()
   const links = authed ? AUTHED_LINKS : GUEST_LINKS
 
   return (
-    <nav className="flex items-center gap-0.5">
+    <nav className="hidden items-center gap-0.5 sm:flex">
       {links.map((link) => {
         const active =
           pathname === link.href || pathname.startsWith(`${link.href}/`)

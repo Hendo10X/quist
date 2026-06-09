@@ -3,9 +3,11 @@ import { notFound } from "next/navigation"
 import { db } from "@workspace/db"
 import { Badge } from "@workspace/ui/components/badge"
 
+import { CodeBlock } from "@/components/code-block"
 import { ModelBadge } from "@/components/model-badge"
 import { MotionReveal } from "@/components/motion"
 import { SiteHeader } from "@/components/site-header"
+import { highlightCode } from "@/lib/highlight"
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -33,8 +35,13 @@ export default async function SolutionPage({
     .map((link) => link.tag?.name)
     .filter((name): name is string => Boolean(name))
 
-  const snippets = [...solution.codeSnippets].sort(
-    (a, b) => a.position - b.position
+  const snippets = await Promise.all(
+    [...solution.codeSnippets]
+      .sort((a, b) => a.position - b.position)
+      .map(async (snippet) => ({
+        ...snippet,
+        html: await highlightCode(snippet.content, snippet.language),
+      }))
   )
 
   return (
@@ -84,17 +91,12 @@ export default async function SolutionPage({
         {snippets.length > 0 ? (
           <section className="flex flex-col gap-3">
             {snippets.map((snippet) => (
-              <div
+              <CodeBlock
                 key={snippet.id}
-                className="overflow-hidden rounded-md border border-border"
-              >
-                <div className="border-b border-border bg-muted/50 px-3 py-1 font-mono text-[0.625rem] text-muted-foreground">
-                  {snippet.language ?? "code"}
-                </div>
-                <pre className="overflow-x-auto px-3 py-2.5 font-mono text-xs leading-relaxed">
-                  <code>{snippet.content}</code>
-                </pre>
-              </div>
+                html={snippet.html}
+                code={snippet.content}
+                language={snippet.language}
+              />
             ))}
           </section>
         ) : null}
