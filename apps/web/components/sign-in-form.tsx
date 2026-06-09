@@ -10,6 +10,7 @@ import { Label } from "@workspace/ui/components/label"
 import { PasswordInput } from "@workspace/ui/components/password-input"
 
 import { FormError } from "@/components/motion"
+import { Spokes } from "@/components/spokes"
 import { signIn } from "@/lib/auth-client"
 import { getFieldErrors, signInSchema } from "@/lib/validations"
 
@@ -82,7 +83,14 @@ export function SignInForm() {
       {formError ? <FormError message={formError} /> : null}
 
       <Button type="submit" size="lg" disabled={isPending} className="mt-1">
-        {isPending ? "Signing in…" : "Sign in"}
+        {isPending ? (
+          <>
+            <Spokes className="size-3.5" />
+            Signing in…
+          </>
+        ) : (
+          "Sign in"
+        )}
       </Button>
 
       <p className="text-center text-xs/relaxed text-muted-foreground">

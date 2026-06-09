@@ -10,6 +10,7 @@ import { Label } from "@workspace/ui/components/label"
 import { PasswordInput } from "@workspace/ui/components/password-input"
 
 import { FormError } from "@/components/motion"
+import { Spokes } from "@/components/spokes"
 import { signUp } from "@/lib/auth-client"
 import { getFieldErrors, signUpSchema } from "@/lib/validations"
 
@@ -98,7 +99,14 @@ export function SignUpForm() {
       {formError ? <FormError message={formError} /> : null}
 
       <Button type="submit" size="lg" disabled={isPending} className="mt-1">
-        {isPending ? "Creating account…" : "Create account"}
+        {isPending ? (
+          <>
+            <Spokes className="size-3.5" />
+            Creating account…
+          </>
+        ) : (
+          "Create account"
+        )}
       </Button>
 
       <p className="text-center text-xs/relaxed text-muted-foreground">

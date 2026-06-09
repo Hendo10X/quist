@@ -10,8 +10,11 @@ import { buttonVariants } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 
 import { MainNav } from "@/components/main-nav"
+import { MobileNav } from "@/components/mobile-nav"
+import { SearchCommand } from "@/components/search-command"
 import { SignOutButton } from "@/components/sign-out-button"
 import { auth } from "@/lib/auth"
+import { AUTHED_LINKS, GUEST_LINKS } from "@/lib/nav-links"
 
 function initialsOf(name: string) {
   return name
@@ -42,35 +45,51 @@ export async function SiteHeader() {
       </div>
 
       <div className="flex items-center gap-3">
-        {session ? (
-          <>
-            <Avatar>
-              {session.user.image ? (
-                <AvatarImage src={session.user.image} alt={session.user.name} />
-              ) : null}
-              <AvatarFallback>{initialsOf(session.user.name)}</AvatarFallback>
-            </Avatar>
-            <span className="hidden text-xs text-foreground sm:inline">
-              {session.user.name}
-            </span>
-            <SignOutButton />
-          </>
-        ) : (
-          <>
-            <Link
-              href="/sign-in"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/sign-up"
-              className={cn(buttonVariants({ size: "sm" }))}
-            >
-              Get started
-            </Link>
-          </>
-        )}
+        <SearchCommand />
+
+        <div className="hidden items-center gap-3 sm:flex">
+          {session ? (
+            <>
+              <Avatar>
+                {session.user.image ? (
+                  <AvatarImage
+                    src={session.user.image}
+                    alt={session.user.name}
+                  />
+                ) : null}
+                <AvatarFallback>{initialsOf(session.user.name)}</AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-foreground">
+                {session.user.name}
+              </span>
+              <SignOutButton />
+            </>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/sign-up"
+                className={cn(buttonVariants({ size: "sm" }))}
+              >
+                Get started
+              </Link>
+            </>
+          )}
+        </div>
+
+        <MobileNav
+          links={isAuthed ? AUTHED_LINKS : GUEST_LINKS}
+          user={
+            session
+              ? { name: session.user.name, image: session.user.image ?? null }
+              : undefined
+          }
+        />
       </div>
     </header>
   )

@@ -56,7 +56,13 @@ function setStoredView(next: View) {
   listeners.forEach((listener) => listener())
 }
 
-export function BrowseView({ items }: { items: BrowseItem[] }) {
+export function BrowseView({
+  items,
+  emptyMessage = "No solutions yet. Be the first to share one.",
+}: {
+  items: BrowseItem[]
+  emptyMessage?: string
+}) {
   const view = React.useSyncExternalStore(
     subscribe,
     getStoredView,
@@ -70,7 +76,7 @@ export function BrowseView({ items }: { items: BrowseItem[] }) {
   if (items.length === 0) {
     return (
       <div className="rounded-lg border border-border px-6 py-16 text-center text-sm text-muted-foreground">
-        No solutions yet. Be the first to share one.
+        {emptyMessage}
       </div>
     )
   }

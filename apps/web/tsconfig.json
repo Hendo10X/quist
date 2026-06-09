@@ -5,7 +5,9 @@
       "@/*": ["./*"],
       "@workspace/ui/*": ["../../packages/ui/src/*"],
       "@workspace/db": ["../../packages/db/src/index.ts"],
-      "@workspace/db/*": ["../../packages/db/src/*"]
+      "@workspace/db/*": ["../../packages/db/src/*"],
+      "@workspace/redis": ["../../packages/redis/src/index.ts"],
+      "@workspace/redis/*": ["../../packages/redis/src/*"]
     },
     "plugins": [
       {

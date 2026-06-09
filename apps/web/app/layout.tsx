@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono, Inter, JetBrains_Mono } from "next/font/google"
+import localFont from "next/font/local"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -25,6 +26,12 @@ const fontJetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
 })
 
+// Display font for landing / marketing headings (PP Mondwest, local file).
+const fontDisplay = localFont({
+  src: "../public/fonts/ppmondwest-regular.otf",
+  variable: "--font-mondwest",
+})
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,6 +46,7 @@ export default function RootLayout({
         fontMono.variable,
         fontJetbrainsMono.variable,
         fontGeist.variable,
+        fontDisplay.variable,
         "font-sans",
         inter.variable
       )}

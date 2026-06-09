@@ -123,6 +123,9 @@
   * {
     @apply border-border outline-ring/50;
     }
+  html {
+    scroll-behavior: smooth;
+    }
   body {
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
@@ -180,4 +183,62 @@
   --model-fg: oklch(0.8 0.12 262);
   --model-bg: oklch(0.62 0.14 262 / 0.15);
   --model-border: oklch(0.62 0.14 262 / 0.3);
+}
+
+/* PP Mondwest display font for landing headings (loaded via next/font/local
+   as --font-mondwest in layout.tsx). Explicit class so it doesn't depend on a
+   Tailwind theme-token utility being generated. */
+.font-display {
+  font-family: var(--font-mondwest), ui-serif, Georgia, serif;
+}
+
+/* Blinking text caret for the landing search demo. */
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.animate-caret {
+  animation: caret-blink 1s step-end infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-caret {
+    animation: none;
+  }
+}
+
+/* Subtle dot-grid background. Two offset radial gradients tile into a fine grid
+   of dots; faint white in dark mode so they stay subtle but visible. */
+.dot-grid {
+  background-image:
+    radial-gradient(circle, rgba(0, 0, 0, 0.1) 0.75px, transparent 0.75px),
+    radial-gradient(circle, rgba(0, 0, 0, 0.1) 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
+  background-position:
+    0 0,
+    12px 12px;
+}
+.dark .dot-grid {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.07) 0.75px, transparent 0.75px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.07) 0.75px, transparent 0.75px);
+}
+
+/* Shiki dual-theme syntax highlighting. Apply light token colors by default,
+   dark under `.dark`. The code background comes from the wrapping container. */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+}
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
+}
+.shiki {
+  background-color: transparent !important;
 }

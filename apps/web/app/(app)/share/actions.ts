@@ -60,11 +60,21 @@ export async function parseTranscriptAction(
     })
     return { ok: true, data: object }
   } catch (error) {
-    // Surface the real reason while we're building the flow.
+    // Surface the provider's real reason (status + body/url) while building.
     console.error("[parseTranscript] generateObject failed:", error)
-    const message =
-      error instanceof Error ? error.message : "Unknown parsing error"
-    return { ok: false, error: `Parsing failed: ${message}` }
+    const e = error as {
+      statusCode?: number
+      responseBody?: string
+      url?: string
+      message?: string
+    }
+    const detail =
+      e.statusCode || e.responseBody || e.url
+        ? `${e.statusCode ?? ""} ${e.responseBody || e.url || ""}`.trim()
+        : error instanceof Error
+          ? error.message
+          : "Unknown parsing error"
+    return { ok: false, error: `Parsing failed: ${detail}` }
   }
 }
 
