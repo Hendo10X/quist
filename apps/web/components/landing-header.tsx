@@ -4,7 +4,15 @@ import { buttonVariants } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 
 import { MobileNav } from "@/components/mobile-nav"
-import { GUEST_LINKS } from "@/lib/nav-links"
+import { TagsMenu } from "@/components/tags-menu"
+import type { NavLink } from "@/lib/nav-links"
+
+// `/share` is auth-gated (redirects to sign-in), so "Share a solution" only
+// works once signed in.
+const LANDING_LINKS: NavLink[] = [
+  { href: "/browse", label: "Browse" },
+  { href: "/share", label: "Share a solution" },
+]
 
 // Marketing nav for the landing page only — always shows the sign-in CTAs,
 // never the signed-in app nav.
@@ -18,13 +26,17 @@ export function LandingHeader() {
         >
           Quist
         </Link>
-        <nav className="hidden items-center sm:flex">
-          <Link
-            href="/browse"
-            className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Browse
-          </Link>
+        <nav className="hidden items-center gap-0.5 sm:flex">
+          {LANDING_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <TagsMenu />
         </nav>
       </div>
 
@@ -40,7 +52,7 @@ export function LandingHeader() {
         </Link>
       </div>
 
-      <MobileNav links={GUEST_LINKS} />
+      <MobileNav links={LANDING_LINKS} />
     </header>
   )
 }
