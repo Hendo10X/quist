@@ -1,6 +1,15 @@
 import { z } from "zod"
 
-export const SOURCE_MODELS = ["claude", "chatgpt", "gemini", "other"] as const
+export const SOURCE_MODELS = [
+  "claude",
+  "chatgpt",
+  "gemini",
+  "grok",
+  "mistral",
+  "perplexity",
+  "deepseek",
+  "other",
+] as const
 export type SourceModel = (typeof SOURCE_MODELS)[number]
 
 /** Shape the LLM must return when parsing a raw transcript. */

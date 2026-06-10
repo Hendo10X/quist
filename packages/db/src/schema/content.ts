@@ -8,6 +8,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core"
 
@@ -24,6 +25,10 @@ export const sourceModel = pgEnum("source_model", [
   "claude",
   "chatgpt",
   "gemini",
+  "grok",
+  "mistral",
+  "perplexity",
+  "deepseek",
   "other",
 ])
 
@@ -45,7 +50,15 @@ export const solutions = pgTable(
       sql`setweight(to_tsvector('english', coalesce(question_title, '')), 'A') || setweight(to_tsvector('english', coalesce(question_body, '') || ' ' || coalesce(answer_body, '')), 'B')`
     ),
   },
-  (table) => [index("solutions_search_idx").using("gin", table.searchVector)]
+  (table) => [
+    index("solutions_search_idx").using("gin", table.searchVector),
+    // Dedup guard: a user can't publish the same transcript twice. Hash the
+    // transcript since raw text is too large for a btree index entry.
+    uniqueIndex("solutions_user_transcript_unique").on(
+      table.userId,
+      sql`md5(${table.rawTranscript})`
+    ),
+  ]
 )
 
 export const tags = pgTable("tags", {
