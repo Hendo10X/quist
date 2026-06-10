@@ -5,6 +5,7 @@ import { db } from "@workspace/db"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 
+import { DeleteSolutionButton } from "@/components/delete-solution-button"
 import { ModelBadge } from "@/components/model-badge"
 import { MotionList, MotionListItem } from "@/components/motion"
 import { auth } from "@/lib/auth"
@@ -61,32 +62,43 @@ export default async function DashboardPage() {
 
             return (
               <MotionListItem key={solution.id}>
-                <Link
-                  href={`/solutions/${solution.id}`}
-                  className="flex flex-col gap-1.5 px-4 py-3 transition-colors hover:bg-muted/40"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="text-sm font-medium">
-                      {solution.questionTitle}
-                    </span>
-                    <ModelBadge
-                      model={solution.sourceModel}
-                      className="mt-0.5"
-                    />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                    <time
-                      dateTime={solution.createdAt.toISOString()}
-                      className="tabular-nums"
-                    >
-                      {solution.createdAt.toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </time>
-                    {tags.length > 0 ? <span>· {tags.join(", ")}</span> : null}
-                  </div>
-                </Link>
+                <div className="group flex items-stretch transition-colors hover:bg-muted/40">
+                  <Link
+                    href={`/solutions/${solution.id}`}
+                    className="flex min-w-0 flex-1 flex-col gap-1.5 px-4 py-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-sm font-medium">
+                        {solution.questionTitle}
+                      </span>
+                      <ModelBadge
+                        model={solution.sourceModel}
+                        className="mt-0.5"
+                      />
+                    </div>
+                    <div className="flex min-w-0 items-center gap-x-2 text-[0.625rem] text-muted-foreground sm:text-xs">
+                      <time
+                        dateTime={solution.createdAt.toISOString()}
+                        className="shrink-0 whitespace-nowrap tabular-nums"
+                      >
+                        {solution.createdAt.toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </time>
+                      {tags.length > 0 ? (
+                        <span className="min-w-0 truncate">
+                          · {tags.join(", ")}
+                        </span>
+                      ) : null}
+                    </div>
+                  </Link>
+                  <DeleteSolutionButton
+                    solutionId={solution.id}
+                    solutionTitle={solution.questionTitle}
+                    className="mr-2.5"
+                  />
+                </div>
               </MotionListItem>
             )
           })}

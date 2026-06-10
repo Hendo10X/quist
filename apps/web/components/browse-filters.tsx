@@ -17,6 +17,10 @@ const MODEL_LABELS: Record<SourceModel, string> = {
   claude: "Claude",
   chatgpt: "ChatGPT",
   gemini: "Gemini",
+  grok: "Grok",
+  mistral: "Mistral",
+  perplexity: "Perplexity",
+  deepseek: "DeepSeek",
   other: "Other",
 }
 

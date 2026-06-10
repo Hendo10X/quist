@@ -29,13 +29,19 @@ function Stat({
 }) {
   return (
     <div className="flex flex-col gap-2 bg-background p-4">
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        <HugeiconsIcon icon={icon} className="size-3.5" strokeWidth={2} />
-        <span className="font-mono text-[0.625rem] tracking-widest uppercase">
+      <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+        <HugeiconsIcon
+          icon={icon}
+          className="size-3 shrink-0 sm:size-3.5"
+          strokeWidth={2}
+        />
+        <span className="truncate font-mono text-[0.5625rem] tracking-wide whitespace-nowrap uppercase sm:text-[0.625rem] sm:tracking-widest">
           {label}
         </span>
       </div>
-      <span className="text-lg font-semibold tabular-nums">{value}</span>
+      <span className="text-base font-semibold tabular-nums sm:text-lg">
+        {value}
+      </span>
     </div>
   )
 }
@@ -83,7 +89,10 @@ export default async function ProfilePage() {
   ])
 
   const modelCounts = modelRows
-    .map((row) => ({ model: row.model as SourceModel, count: Number(row.value) }))
+    .map((row) => ({
+      model: row.model as SourceModel,
+      count: Number(row.value),
+    }))
     .sort((a, b) => b.count - a.count)
 
   const totalSolutions = modelCounts.reduce((sum, row) => sum + row.count, 0)
@@ -157,8 +166,8 @@ export default async function ProfilePage() {
                 const pct = Math.round((used / totalSolutions) * 100)
                 return (
                   <div key={model} className="flex items-center gap-3">
-                    <div className="w-16 shrink-0">
-                      <ModelBadge model={model} />
+                    <div className="w-20 shrink-0 sm:w-24">
+                      <ModelBadge model={model} className="max-w-full truncate" />
                     </div>
                     <div
                       className={cn(
@@ -217,10 +226,10 @@ export default async function ProfilePage() {
                           className="mt-0.5"
                         />
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                      <div className="flex min-w-0 items-center gap-x-2 text-[0.625rem] text-muted-foreground sm:text-xs">
                         <time
                           dateTime={solution.createdAt.toISOString()}
-                          className="tabular-nums"
+                          className="shrink-0 whitespace-nowrap tabular-nums"
                         >
                           {solution.createdAt.toLocaleDateString(undefined, {
                             month: "short",
@@ -228,7 +237,9 @@ export default async function ProfilePage() {
                           })}
                         </time>
                         {tags.length > 0 ? (
-                          <span>· {tags.join(", ")}</span>
+                          <span className="min-w-0 truncate">
+                            · {tags.join(", ")}
+                          </span>
                         ) : null}
                       </div>
                     </Link>

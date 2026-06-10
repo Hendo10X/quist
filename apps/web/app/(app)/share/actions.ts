@@ -3,7 +3,7 @@
 import { db, schema } from "@workspace/db"
 import { request } from "@arcjet/next"
 import { generateObject } from "ai"
-import { inArray } from "drizzle-orm"
+import { and, eq, inArray } from "drizzle-orm"
 import { headers } from "next/headers"
 
 import { parserModel } from "@/lib/ai"
@@ -98,6 +98,23 @@ export async function createSolutionAction(
   const value = parsed.data
 
   try {
+    // Dedup: republishing the same transcript returns the existing solution
+    // instead of creating a copy. Backed by a unique index on
+    // (user_id, md5(raw_transcript)) for races this check misses.
+    const existing = await db
+      .select({ id: schema.solutions.id })
+      .from(schema.solutions)
+      .where(
+        and(
+          eq(schema.solutions.userId, session.user.id),
+          eq(schema.solutions.rawTranscript, value.rawTranscript)
+        )
+      )
+      .limit(1)
+    if (existing[0]) {
+      return { ok: true, id: existing[0].id }
+    }
+
     const [solution] = await db
       .insert(schema.solutions)
       .values({
@@ -151,9 +168,24 @@ export async function createSolutionAction(
     return { ok: true, id: solution.id }
   } catch (error) {
     console.error("[createSolution] insert failed:", error)
+    if (isUniqueViolation(error)) {
+      return {
+        ok: false,
+        error: "You've already published a solution from this transcript.",
+      }
+    }
     const message = error instanceof Error ? error.message : "Unknown error"
     return { ok: false, error: `Save failed: ${message}` }
   }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: string }).code === "23505"
+  )
 }
 
 function buildPrompt(transcript: string): string {
@@ -163,7 +195,7 @@ Extract:
 - question_title: a concise, searchable title for the problem (like a Stack Overflow question title)
 - question_body: the developer's original question/problem, in clear prose
 - answer_body: the working solution explanation in prose. Do NOT inline large code blocks here — put code in code_snippets.
-- source_model: which AI produced the answer, inferred from the transcript ("claude", "chatgpt", "gemini", or "other")
+- source_model: which AI produced the answer, inferred from the transcript ("claude", "chatgpt", "gemini", "grok", "mistral", "perplexity", "deepseek", or "other")
 - tags: 2-6 short lowercase technology/framework/language tags (e.g. "react", "typescript", "cors")
 - code_snippets: each distinct code block from the answer, with its language (or null) and exact content
 - confidence: "high" | "medium" | "low" — how clearly the transcript contains a single, solved problem
