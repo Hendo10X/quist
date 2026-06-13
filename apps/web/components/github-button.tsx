@@ -17,7 +17,7 @@ export function GithubButton() {
     // Redirects the browser to GitHub on success; only returns here on error.
     const { error } = await signIn.social({
       provider: "github",
-      callbackURL: "/dashboard",
+      callbackURL: "/browse",
     })
     if (error) {
       setIsPending(false)

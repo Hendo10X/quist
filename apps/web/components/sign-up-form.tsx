@@ -46,7 +46,7 @@ export function SignUpForm() {
       return
     }
 
-    router.push("/dashboard")
+    router.push("/browse")
     router.refresh()
   }
 

@@ -45,7 +45,7 @@ export function SignInForm() {
       return
     }
 
-    router.push("/dashboard")
+    router.push("/browse")
     router.refresh()
   }
 

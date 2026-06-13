@@ -3,8 +3,13 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Cancel01Icon, Menu01Icon } from "@hugeicons/core-free-icons"
+import {
+  ArrowDown01Icon,
+  Cancel01Icon,
+  Menu01Icon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Collapsible } from "@base-ui/react/collapsible"
 
 import { buttonVariants } from "@workspace/ui/components/button"
 import {
@@ -19,13 +24,16 @@ import { cn } from "@workspace/ui/lib/utils"
 import { SignOutButton } from "@/components/sign-out-button"
 import { UserAvatar } from "@/components/user-avatar"
 import type { NavLink } from "@/lib/nav-links"
+import { TAG_GROUPS } from "@/lib/tags"
 
 export function MobileNav({
   links,
   user,
+  showTags = false,
 }: {
   links: NavLink[]
   user?: { id: string; name: string; image: string | null }
+  showTags?: boolean
 }) {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
@@ -58,7 +66,7 @@ export function MobileNav({
 
         <SheetTitle className="sr-only">Navigation</SheetTitle>
 
-        <nav className="flex flex-col gap-0.5">
+        <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
           {links.map((link) => {
             const active =
               pathname === link.href || pathname.startsWith(`${link.href}/`)
@@ -78,6 +86,42 @@ export function MobileNav({
               </Link>
             )
           })}
+
+          {showTags ? (
+            <Collapsible.Root className="flex flex-col gap-0.5">
+              <Collapsible.Trigger className="group flex items-center justify-between rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors outline-none hover:bg-muted/40 hover:text-foreground">
+                Tags
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  className="size-4 transition-transform duration-200 group-data-[panel-open]:rotate-180"
+                  strokeWidth={2}
+                />
+              </Collapsible.Trigger>
+              <Collapsible.Panel className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-5 px-2 pt-2 pb-1">
+                  {TAG_GROUPS.map((group) => (
+                    <div key={group.label} className="flex flex-col gap-2.5">
+                      <span className="font-mono text-[0.625rem] tracking-widest text-muted-foreground uppercase">
+                        {group.label}
+                      </span>
+                      <div className="flex flex-col gap-2">
+                        {group.tags.map((tag) => (
+                          <Link
+                            key={tag}
+                            href={`/browse?tag=${tag}`}
+                            onClick={() => setOpen(false)}
+                            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            {tag}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Collapsible.Panel>
+            </Collapsible.Root>
+          ) : null}
         </nav>
 
         <div className="mt-auto border-t border-border pt-4">

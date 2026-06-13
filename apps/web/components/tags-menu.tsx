@@ -5,24 +5,7 @@ import { ArrowDown01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Popover } from "@base-ui/react/popover"
 
-const TAG_GROUPS = [
-  {
-    label: "Languages",
-    tags: ["typescript", "javascript", "python", "go", "rust", "sql"],
-  },
-  {
-    label: "Frameworks",
-    tags: ["next.js", "react", "express", "django", "svelte", "vue"],
-  },
-  {
-    label: "Tools",
-    tags: ["docker", "postgres", "redis", "git", "vite", "tailwind"],
-  },
-  {
-    label: "Errors",
-    tags: ["cors", "hydration", "type-error", "401", "memory-leak", "build"],
-  },
-]
+import { TAG_GROUPS } from "@/lib/tags"
 
 export function TagsMenu() {
   return (

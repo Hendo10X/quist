@@ -1,8 +1,8 @@
 export type NavLink = { href: string; label: string }
 
 export const AUTHED_LINKS: NavLink[] = [
-  { href: "/dashboard", label: "My solutions" },
   { href: "/browse", label: "Browse" },
+  { href: "/dashboard", label: "My solutions" },
   { href: "/share", label: "Share" },
 ]
 
