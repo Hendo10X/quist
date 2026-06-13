@@ -13,7 +13,7 @@ export default async function AuthLayout({
   // Already signed in? Skip the auth pages.
   const session = await auth.api.getSession({ headers: await headers() })
   if (session) {
-    redirect("/dashboard")
+    redirect("/browse")
   }
 
   return (

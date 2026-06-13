@@ -52,7 +52,7 @@ export function LandingHeader() {
         </Link>
       </div>
 
-      <MobileNav links={LANDING_LINKS} />
+      <MobileNav links={LANDING_LINKS} showTags />
     </header>
   )
 }

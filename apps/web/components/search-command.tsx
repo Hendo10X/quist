@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Search01Icon } from "@hugeicons/core-free-icons"
+import { CommandIcon, Search01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import {
@@ -22,11 +22,6 @@ export function SearchCommand() {
   const [query, setQuery] = React.useState("")
   const [results, setResults] = React.useState<SearchResult[]>([])
   const [resultsFor, setResultsFor] = React.useState("")
-  const modifier = React.useSyncExternalStore(
-    () => () => {},
-    () => (navigator.platform.toUpperCase().includes("MAC") ? "⌘" : "Ctrl"),
-    () => "Ctrl"
-  )
 
   // ⌘K / Ctrl+K toggles the palette.
   React.useEffect(() => {
@@ -91,7 +86,14 @@ export function SearchCommand() {
           strokeWidth={2}
         />
         <span className="hidden sm:inline">Search solutions</span>
-        <Kbd className="hidden sm:inline-flex">{modifier}K</Kbd>
+        <Kbd className="hidden sm:inline-flex">
+          <HugeiconsIcon
+            icon={CommandIcon}
+            className="size-2.5"
+            strokeWidth={2}
+          />
+          K
+        </Kbd>
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>

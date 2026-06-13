@@ -21,7 +21,7 @@ export async function SiteHeader() {
     <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/85 px-6 backdrop-blur">
       <div className="flex items-center gap-6">
         <Link
-          href={isAuthed ? "/dashboard" : "/"}
+          href={isAuthed ? "/browse" : "/"}
           className="font-mono text-xs tracking-widest text-muted-foreground uppercase"
         >
           Quist
