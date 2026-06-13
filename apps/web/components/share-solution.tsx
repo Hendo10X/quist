@@ -7,6 +7,13 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Badge } from "@workspace/ui/components/badge"
 import { Button, buttonVariants } from "@workspace/ui/components/button"
+import {
+  Dialog,
+  DialogClose,
+  DialogDescription,
+  DialogPopup,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
@@ -45,7 +52,11 @@ const SOURCE_LABELS: Record<SourceModel, string> = {
   other: "Other",
 }
 
-export function ShareSolution() {
+export function ShareSolution({
+  onDirtyChange,
+}: {
+  onDirtyChange?: (dirty: boolean) => void
+} = {}) {
   const [phase, setPhase] = React.useState<"paste" | "review">("paste")
   const [transcript, setTranscript] = React.useState("")
   const [draft, setDraft] = React.useState<Draft | null>(null)
@@ -53,6 +64,15 @@ export function ShareSolution() {
   const [error, setError] = React.useState<string | null>(null)
   const [isPending, setIsPending] = React.useState(false)
   const [publishedId, setPublishedId] = React.useState<string | null>(null)
+  const [confirmBackOpen, setConfirmBackOpen] = React.useState(false)
+
+  // Unsaved work the user could lose by leaving the page entirely (the top back
+  // arrow): a typed transcript or a parsed draft. Once published, nothing's lost.
+  const dirty =
+    !publishedId && (phase === "review" || transcript.trim().length > 0)
+  React.useEffect(() => {
+    onDirtyChange?.(dirty)
+  }, [dirty, onDirtyChange])
 
   async function handleParse() {
     setError(null)
@@ -339,15 +359,40 @@ export function ShareSolution() {
         <Button
           size="lg"
           variant="ghost"
-          onClick={() => {
-            setPhase("paste")
-            setError(null)
-          }}
+          onClick={() => setConfirmBackOpen(true)}
           disabled={isPending}
         >
           Back
         </Button>
       </div>
+
+      <Dialog open={confirmBackOpen} onOpenChange={setConfirmBackOpen}>
+        <DialogPopup className="max-w-sm p-5">
+          <DialogTitle className="text-sm font-semibold">
+            Go back to the transcript?
+          </DialogTitle>
+          <DialogDescription className="mt-1.5 text-xs/relaxed text-muted-foreground">
+            You&apos;ll return to the paste step. Edits you made to this draft
+            will be lost if you re-parse.
+          </DialogDescription>
+          <div className="mt-5 flex items-center justify-end gap-2">
+            <DialogClose render={<Button variant="ghost" size="lg" />}>
+              Keep editing
+            </DialogClose>
+            <Button
+              size="lg"
+              variant="destructive"
+              onClick={() => {
+                setConfirmBackOpen(false)
+                setPhase("paste")
+                setError(null)
+              }}
+            >
+              Go back
+            </Button>
+          </div>
+        </DialogPopup>
+      </Dialog>
     </MotionReveal>
   )
 }
