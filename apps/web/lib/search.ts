@@ -71,7 +71,9 @@ export async function searchSolutions(query: string): Promise<SearchResult[]> {
       rank: sql<number>`ts_rank(${schema.solutions.searchVector}, ${tsQuery})`,
     })
     .from(schema.solutions)
-    .where(sql`${schema.solutions.searchVector} @@ ${tsQuery}`)
+    .where(
+      sql`${schema.solutions.searchVector} @@ ${tsQuery} and ${schema.solutions.status} = 'published'`
+    )
     .orderBy(sql`ts_rank(${schema.solutions.searchVector}, ${tsQuery}) desc`)
     .limit(MAX_RESULTS)
 

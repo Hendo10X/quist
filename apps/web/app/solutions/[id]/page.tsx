@@ -1,13 +1,20 @@
+import { headers } from "next/headers"
+import Link from "next/link"
 import { notFound } from "next/navigation"
+import { Edit02Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 import { db } from "@workspace/db"
 import { Badge } from "@workspace/ui/components/badge"
+import { buttonVariants } from "@workspace/ui/components/button"
+import { cn } from "@workspace/ui/lib/utils"
 
 import { BackButton } from "@/components/back-button"
 import { CodeBlock } from "@/components/code-block"
 import { ModelBadge } from "@/components/model-badge"
 import { MotionReveal } from "@/components/motion"
 import { SiteHeader } from "@/components/site-header"
+import { auth } from "@/lib/auth"
 import { highlightCode } from "@/lib/highlight"
 
 const UUID_RE =
@@ -32,6 +39,11 @@ export default async function SolutionPage({
 
   if (!solution) notFound()
 
+  const session = await auth.api.getSession({ headers: await headers() })
+  const isOwner = session?.user.id === solution.userId
+  // Drafts are visible only to their author.
+  if (solution.status === "draft" && !isOwner) notFound()
+
   const tags = solution.solutionTags
     .map((link) => link.tag?.name)
     .filter((name): name is string => Boolean(name))
@@ -50,13 +62,32 @@ export default async function SolutionPage({
       <SiteHeader />
 
       <article className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
-        <BackButton className="-ml-2" />
+        <div className="flex items-center justify-between gap-2">
+          <BackButton className="-ml-2" />
+          {isOwner ? (
+            <Link
+              href={`/solutions/${solution.id}/edit`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              <HugeiconsIcon icon={Edit02Icon} strokeWidth={2} />
+              Edit
+            </Link>
+          ) : null}
+        </div>
         <MotionReveal className="flex flex-col gap-3">
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
             {solution.questionTitle}
           </h1>
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <ModelBadge model={solution.sourceModel} />
+            {solution.status === "draft" ? (
+              <Badge
+                variant="outline"
+                className="border-amber-500/40 text-amber-700 dark:text-amber-500"
+              >
+                Draft
+              </Badge>
+            ) : null}
             <span>{solution.author?.name ?? "Anonymous"}</span>
             <span aria-hidden>·</span>
             <time

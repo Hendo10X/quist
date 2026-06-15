@@ -4,6 +4,7 @@ import { db, schema } from "@workspace/db"
 import { request } from "@arcjet/next"
 import { generateObject } from "ai"
 import { and, eq, inArray } from "drizzle-orm"
+import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 
 import { parserModel } from "@/lib/ai"
@@ -13,9 +14,58 @@ import {
   createSolutionSchema,
   normalizeTags,
   parsedSolutionSchema,
+  updateSolutionSchema,
   type CreateSolutionInput,
   type ParsedSolution,
+  type SolutionStatus,
+  type UpdateSolutionInput,
 } from "@/lib/solution-schema"
+
+type CodeSnippetInput = { language: string | null; content: string }
+
+// Revalidate the surfaces a solution can appear on. Public listings only matter
+// when it's (or was) published; the dashboard always shows the author's own.
+function revalidateSolutionViews(id?: string) {
+  revalidatePath("/dashboard")
+  revalidatePath("/profile")
+  revalidatePath("/browse")
+  if (id) revalidatePath(`/solutions/${id}`)
+}
+
+// Upsert tag rows, then link them to the solution. neon-http has no interactive
+// transactions, so these run as separate round-trips. Acceptable for the MVP.
+async function linkTags(solutionId: string, tags: string[]) {
+  const tagNames = normalizeTags(tags)
+  if (tagNames.length === 0) return
+
+  await db
+    .insert(schema.tags)
+    .values(tagNames.map((name) => ({ name })))
+    .onConflictDoNothing()
+
+  const tagRows = await db
+    .select({ id: schema.tags.id })
+    .from(schema.tags)
+    .where(inArray(schema.tags.name, tagNames))
+
+  if (tagRows.length > 0) {
+    await db
+      .insert(schema.solutionTags)
+      .values(tagRows.map((tag) => ({ solutionId, tagId: tag.id })))
+  }
+}
+
+async function insertSnippets(solutionId: string, snippets: CodeSnippetInput[]) {
+  if (snippets.length === 0) return
+  await db.insert(schema.codeSnippets).values(
+    snippets.map((snippet, index) => ({
+      solutionId,
+      language: snippet.language,
+      content: snippet.content,
+      position: index,
+    }))
+  )
+}
 
 type ParseResult =
   | { ok: true; data: ParsedSolution }
@@ -81,7 +131,8 @@ export async function parseTranscriptAction(
 type CreateResult = { ok: true; id: string } | { ok: false; error: string }
 
 export async function createSolutionAction(
-  input: CreateSolutionInput
+  input: CreateSolutionInput,
+  status: SolutionStatus = "published"
 ): Promise<CreateResult> {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) {
@@ -98,11 +149,14 @@ export async function createSolutionAction(
   const value = parsed.data
 
   try {
-    // Dedup: republishing the same transcript returns the existing solution
+    // Dedup: re-submitting the same transcript returns the existing solution
     // instead of creating a copy. Backed by a unique index on
     // (user_id, md5(raw_transcript)) for races this check misses.
     const existing = await db
-      .select({ id: schema.solutions.id })
+      .select({
+        id: schema.solutions.id,
+        status: schema.solutions.status,
+      })
       .from(schema.solutions)
       .where(
         and(
@@ -112,6 +166,14 @@ export async function createSolutionAction(
       )
       .limit(1)
     if (existing[0]) {
+      // A draft they're now publishing should actually go live.
+      if (status === "published" && existing[0].status === "draft") {
+        await db
+          .update(schema.solutions)
+          .set({ status: "published", updatedAt: new Date() })
+          .where(eq(schema.solutions.id, existing[0].id))
+        revalidateSolutionViews(existing[0].id)
+      }
       return { ok: true, id: existing[0].id }
     }
 
@@ -124,6 +186,7 @@ export async function createSolutionAction(
         answerBody: value.answerBody,
         sourceModel: value.sourceModel,
         rawTranscript: value.rawTranscript,
+        status,
       })
       .returning({ id: schema.solutions.id })
 
@@ -131,49 +194,86 @@ export async function createSolutionAction(
       return { ok: false, error: "Failed to save the solution." }
     }
 
-    // neon-http has no interactive transactions, so these run as separate
-    // round-trips. Acceptable for the MVP.
-    const tagNames = normalizeTags(value.tags)
-    if (tagNames.length > 0) {
-      await db
-        .insert(schema.tags)
-        .values(tagNames.map((name) => ({ name })))
-        .onConflictDoNothing()
+    await linkTags(solution.id, value.tags)
+    await insertSnippets(solution.id, value.codeSnippets)
 
-      const tagRows = await db
-        .select({ id: schema.tags.id })
-        .from(schema.tags)
-        .where(inArray(schema.tags.name, tagNames))
-
-      if (tagRows.length > 0) {
-        await db
-          .insert(schema.solutionTags)
-          .values(
-            tagRows.map((tag) => ({ solutionId: solution.id, tagId: tag.id }))
-          )
-      }
-    }
-
-    if (value.codeSnippets.length > 0) {
-      await db.insert(schema.codeSnippets).values(
-        value.codeSnippets.map((snippet, index) => ({
-          solutionId: solution.id,
-          language: snippet.language,
-          content: snippet.content,
-          position: index,
-        }))
-      )
-    }
-
+    revalidateSolutionViews()
     return { ok: true, id: solution.id }
   } catch (error) {
     console.error("[createSolution] insert failed:", error)
     if (isUniqueViolation(error)) {
       return {
         ok: false,
-        error: "You've already published a solution from this transcript.",
+        error: "You already have a solution from this transcript.",
       }
     }
+    const message = error instanceof Error ? error.message : "Unknown error"
+    return { ok: false, error: `Save failed: ${message}` }
+  }
+}
+
+type UpdateResult = { ok: true; id: string } | { ok: false; error: string }
+
+export async function updateSolutionAction(
+  input: UpdateSolutionInput,
+  status: SolutionStatus
+): Promise<UpdateResult> {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) {
+    return { ok: false, error: "You must be signed in to edit a solution." }
+  }
+
+  const parsed = updateSolutionSchema.safeParse(input)
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Please fill in the title, question, and answer.",
+    }
+  }
+  const value = parsed.data
+
+  try {
+    // Ownership is enforced in the WHERE clause. The search vector is a
+    // generated column, so it recomputes automatically from the new content.
+    const [updated] = await db
+      .update(schema.solutions)
+      .set({
+        questionTitle: value.questionTitle,
+        questionBody: value.questionBody,
+        answerBody: value.answerBody,
+        sourceModel: value.sourceModel,
+        status,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(schema.solutions.id, value.solutionId),
+          eq(schema.solutions.userId, session.user.id)
+        )
+      )
+      .returning({ id: schema.solutions.id })
+
+    if (!updated) {
+      return { ok: false, error: "Solution not found." }
+    }
+
+    // Replace tags and code snippets wholesale — simplest correct approach for
+    // an edit. FK cascade isn't involved here since we delete the links/rows
+    // directly. (neon-http: separate round-trips, no transaction.)
+    await db
+      .delete(schema.solutionTags)
+      .where(eq(schema.solutionTags.solutionId, value.solutionId))
+    await db
+      .delete(schema.codeSnippets)
+      .where(eq(schema.codeSnippets.solutionId, value.solutionId))
+
+    await linkTags(value.solutionId, value.tags)
+    await insertSnippets(value.solutionId, value.codeSnippets)
+
+    revalidateSolutionViews(value.solutionId)
+    return { ok: true, id: value.solutionId }
+  } catch (error) {
+    console.error("[updateSolution] update failed:", error)
     const message = error instanceof Error ? error.message : "Unknown error"
     return { ok: false, error: `Save failed: ${message}` }
   }

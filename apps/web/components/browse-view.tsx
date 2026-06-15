@@ -2,8 +2,15 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { GridIcon, ListViewIcon } from "@hugeicons/core-free-icons"
+import { useRouter } from "next/navigation"
+import {
+  CarouselHorizontalIcon,
+  GridIcon,
+  ListViewIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { StampStack } from "stampstack"
+import "stampstack/styles.css"
 
 import { Button } from "@workspace/ui/components/button"
 
@@ -24,13 +31,14 @@ export type BrowseItem = {
 const VIEWS = [
   { key: "list", label: "List view", icon: ListViewIcon },
   { key: "grid", label: "Grid view", icon: GridIcon },
+  { key: "stack", label: "Carousel view", icon: CarouselHorizontalIcon },
 ] as const
 
 type View = (typeof VIEWS)[number]["key"]
 const STORAGE_KEY = "quist:browse-view"
 
 function isView(value: string | null): value is View {
-  return value === "list" || value === "grid"
+  return value === "list" || value === "grid" || value === "stack"
 }
 
 // Persisted view preference exposed as an external store, so the component
@@ -99,7 +107,9 @@ export function BrowseView({
         ))}
       </div>
 
-      {view === "grid" ? (
+      {view === "stack" ? (
+        <StackView items={items} />
+      ) : view === "grid" ? (
         <GridView items={items} />
       ) : (
         <ListView items={items} />
@@ -165,5 +175,67 @@ function GridView({ items }: { items: BrowseItem[] }) {
         </MotionItem>
       ))}
     </MotionStack>
+  )
+}
+
+// Per-model stamp frame colors, mirroring each model's --model-fg accent (light
+// values). The card surface and text follow the app's theme tokens so the
+// carousel flips with light/dark automatically.
+const MODEL_FRAME: Record<SourceModel, string> = {
+  claude: "#9f5000",
+  chatgpt: "#036f4f",
+  gemini: "#3a65b8",
+  grok: "#814a8d",
+  mistral: "#a74541",
+  perplexity: "#007273",
+  deepseek: "#6453a7",
+  other: "#7c7c7c",
+}
+
+const STAMP_THEME = {
+  "--stampstack-card-bg": "var(--card)",
+  "--stampstack-text": "var(--card-foreground)",
+  "--stampstack-radius": "0.75rem",
+} as React.CSSProperties
+
+function StackView({ items }: { items: BrowseItem[] }) {
+  const router = useRouter()
+
+  return (
+    // Clip the coverflow's sideways fan so it never pushes the page wider.
+    <div className="overflow-hidden">
+      <StampStack
+        items={items}
+        cardWidth={260}
+        className="stampstack-flat"
+        style={STAMP_THEME}
+        onSelect={(item) => router.push(`/solutions/${item.id}`)}
+        frameColor={(item) => MODEL_FRAME[item.model]}
+        renderStamp={(item, state) => (
+          <div
+            className="flex h-full flex-col gap-2 p-4 transition-opacity duration-200"
+            style={{ opacity: state.focused ? 1 : 0.6 }}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <span className="line-clamp-3 text-sm font-medium">
+                {item.title}
+              </span>
+              <ModelBadge model={item.model} className="mt-0.5 shrink-0" />
+            </div>
+            <p className="line-clamp-4 text-xs/relaxed text-muted-foreground">
+              {item.preview}
+            </p>
+            <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.625rem] text-muted-foreground">
+              <span className="truncate">{item.author}</span>
+              <span aria-hidden>·</span>
+              <span className="tabular-nums">{item.date}</span>
+              {item.tags.length > 0 ? (
+                <span className="w-full truncate">{item.tags.join(", ")}</span>
+              ) : null}
+            </div>
+          </div>
+        )}
+      />
+    </div>
   )
 }

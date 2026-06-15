@@ -227,6 +227,19 @@
   --model-border: oklch(0.62 0.13 290 / 0.3);
 }
 
+/* Browse carousel (stampstack): drop the scalloped postage-stamp frame and let
+   the content fill the card, so each card is just a flat surface with a colored
+   (per-model) border. The border color comes through as --stampstack-frame via
+   the component's frameColor prop. Scoped to .stampstack-flat so it only flattens
+   our usage. */
+.stampstack-flat .stampstack-frame {
+  display: none;
+}
+.stampstack-flat .stampstack-content {
+  inset: 0;
+  border-width: 2px;
+}
+
 /* PP Mondwest display font for landing headings (loaded via next/font/local
    as --font-mondwest in layout.tsx). Explicit class so it doesn't depend on a
    Tailwind theme-token utility being generated. */
