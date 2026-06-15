@@ -32,6 +32,10 @@ export const sourceModel = pgEnum("source_model", [
   "other",
 ])
 
+// Drafts are private to the author; only "published" solutions appear in
+// browse, search, and on public profiles. Existing rows default to published.
+export const solutionStatus = pgEnum("solution_status", ["draft", "published"])
+
 export const solutions = pgTable(
   "solutions",
   {
@@ -44,7 +48,9 @@ export const solutions = pgTable(
     answerBody: text("answer_body").notNull(),
     sourceModel: sourceModel("source_model").notNull().default("other"),
     rawTranscript: text("raw_transcript").notNull(),
+    status: solutionStatus("status").notNull().default("published"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
     // Precomputed, STORED weighted search vector: title => A, bodies => B.
     searchVector: tsvector("search_vector").generatedAlwaysAs(
       sql`setweight(to_tsvector('english', coalesce(question_title, '')), 'A') || setweight(to_tsvector('english', coalesce(question_body, '') || ' ' || coalesce(answer_body, '')), 'B')`

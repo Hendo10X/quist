@@ -30,6 +30,8 @@ export default async function BrowsePage({
   const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1)
 
   const where = and(
+    // Drafts are private to their author — never list them publicly.
+    eq(schema.solutions.status, "published"),
     model ? eq(schema.solutions.sourceModel, model) : undefined,
     tag
       ? sql`exists (select 1 from solution_tags st join tags t on t.id = st.tag_id where st.solution_id = ${schema.solutions.id} and t.name = ${tag})`
@@ -58,7 +60,7 @@ export default async function BrowsePage({
       offset: (page - 1) * PAGE_SIZE,
     }),
     db.select({ value: count() }).from(schema.solutions).where(where),
-    // Most-used tags, for the filter dropdown.
+    // Most-used tags, for the filter dropdown — counting published only.
     db
       .select({ name: schema.tags.name })
       .from(schema.tags)
@@ -66,6 +68,11 @@ export default async function BrowsePage({
         schema.solutionTags,
         eq(schema.solutionTags.tagId, schema.tags.id)
       )
+      .innerJoin(
+        schema.solutions,
+        eq(schema.solutions.id, schema.solutionTags.solutionId)
+      )
+      .where(eq(schema.solutions.status, "published"))
       .groupBy(schema.tags.name)
       .orderBy(sql`count(${schema.solutionTags.solutionId}) desc`)
       .limit(24),

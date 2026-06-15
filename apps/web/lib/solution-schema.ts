@@ -12,6 +12,9 @@ export const SOURCE_MODELS = [
 ] as const
 export type SourceModel = (typeof SOURCE_MODELS)[number]
 
+export const SOLUTION_STATUSES = ["draft", "published"] as const
+export type SolutionStatus = (typeof SOLUTION_STATUSES)[number]
+
 /** Shape the LLM must return when parsing a raw transcript. */
 export const parsedSolutionSchema = z.object({
   question_title: z.string(),
@@ -47,6 +50,14 @@ export const createSolutionSchema = z.object({
 })
 
 export type CreateSolutionInput = z.infer<typeof createSolutionSchema>
+
+/** Shape the client submits when editing an existing solution. The raw
+ *  transcript is never edited, so it's omitted; the solution id is added. */
+export const updateSolutionSchema = createSolutionSchema
+  .omit({ rawTranscript: true })
+  .extend({ solutionId: z.string().uuid() })
+
+export type UpdateSolutionInput = z.infer<typeof updateSolutionSchema>
 
 /** Lowercase, trim, and de-duplicate tag names before saving. */
 export function normalizeTags(tags: string[]): string[] {

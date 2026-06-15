@@ -6,7 +6,7 @@ import {
   Tag01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { count, countDistinct, eq } from "drizzle-orm"
+import { and, count, countDistinct, eq } from "drizzle-orm"
 
 import { db, schema } from "@workspace/db"
 import { buttonVariants } from "@workspace/ui/components/button"
@@ -59,10 +59,16 @@ export default async function ProfilePage() {
       columns: { createdAt: true },
     }),
     // Per-model counts — only models the user has actually used appear.
+    // Profile reflects public contributions, so drafts are excluded throughout.
     db
       .select({ model: schema.solutions.sourceModel, value: count() })
       .from(schema.solutions)
-      .where(eq(schema.solutions.userId, userId))
+      .where(
+        and(
+          eq(schema.solutions.userId, userId),
+          eq(schema.solutions.status, "published")
+        )
+      )
       .groupBy(schema.solutions.sourceModel),
     db
       .select({ value: countDistinct(schema.solutionTags.tagId) })
@@ -71,9 +77,15 @@ export default async function ProfilePage() {
         schema.solutions,
         eq(schema.solutions.id, schema.solutionTags.solutionId)
       )
-      .where(eq(schema.solutions.userId, userId)),
+      .where(
+        and(
+          eq(schema.solutions.userId, userId),
+          eq(schema.solutions.status, "published")
+        )
+      ),
     db.query.solutions.findMany({
-      where: (table, { eq }) => eq(table.userId, userId),
+      where: (table, { eq, and }) =>
+        and(eq(table.userId, userId), eq(table.status, "published")),
       orderBy: (table, { desc }) => desc(table.createdAt),
       columns: {
         id: true,
