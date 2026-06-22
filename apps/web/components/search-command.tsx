@@ -2,7 +2,11 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { CommandIcon, Search01Icon } from "@hugeicons/core-free-icons"
+import {
+  CheckmarkBadge02Icon,
+  CommandIcon,
+  Search01Icon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import {
@@ -146,9 +150,21 @@ export function SearchCommand() {
                     <span className="text-sm font-medium">{result.title}</span>
                     <ModelBadge model={result.sourceModel} className="mt-0.5" />
                   </div>
-                  <p className="line-clamp-1 text-xs text-muted-foreground">
-                    {result.preview}
-                  </p>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="line-clamp-1 text-xs text-muted-foreground">
+                      {result.preview}
+                    </p>
+                    {result.confirmations > 0 ? (
+                      <span className="flex shrink-0 items-center gap-1 text-[0.625rem] text-muted-foreground tabular-nums">
+                        <HugeiconsIcon
+                          icon={CheckmarkBadge02Icon}
+                          className="size-3"
+                          strokeWidth={2}
+                        />
+                        {result.confirmations}
+                      </span>
+                    ) : null}
+                  </div>
                 </button>
               ))
             )}

@@ -33,7 +33,7 @@ export function BrowseFilters({
   tags: string[]
   activeTag?: string
   activeModel?: SourceModel
-  activeSort: "newest" | "oldest"
+  activeSort: "newest" | "oldest" | "top"
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -103,17 +103,24 @@ export function BrowseFilters({
       <Select
         value={activeSort}
         onValueChange={(value) =>
-          update("sort", value === "newest" ? undefined : "oldest")
+          update("sort", value === "newest" ? undefined : String(value))
         }
       >
         <SelectTrigger className="min-w-32" aria-label="Sort order">
           <SelectValue>
-            {(value) => (value === "newest" ? "Newest first" : "Oldest first")}
+            {(value) =>
+              value === "newest"
+                ? "Newest first"
+                : value === "oldest"
+                  ? "Oldest first"
+                  : "Most confirmed"
+            }
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="newest">Newest first</SelectItem>
           <SelectItem value="oldest">Oldest first</SelectItem>
+          <SelectItem value="top">Most confirmed</SelectItem>
         </SelectContent>
       </Select>
     </div>

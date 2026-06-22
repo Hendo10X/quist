@@ -26,7 +26,12 @@ export default async function BrowsePage({
       ? (params.model as SourceModel)
       : undefined
   const tag = params.tag?.trim() || undefined
-  const sort = params.sort === "oldest" ? "oldest" : "newest"
+  const sort =
+    params.sort === "oldest"
+      ? "oldest"
+      : params.sort === "top"
+        ? "top"
+        : "newest"
   const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1)
 
   const where = and(
@@ -42,14 +47,20 @@ export default async function BrowsePage({
     db.query.solutions.findMany({
       where,
       orderBy:
-        sort === "oldest"
-          ? asc(schema.solutions.createdAt)
-          : desc(schema.solutions.createdAt),
+        sort === "top"
+          ? [
+              desc(schema.solutions.confirmationCount),
+              desc(schema.solutions.createdAt),
+            ]
+          : sort === "oldest"
+            ? asc(schema.solutions.createdAt)
+            : desc(schema.solutions.createdAt),
       columns: {
         id: true,
         questionTitle: true,
         answerBody: true,
         sourceModel: true,
+        confirmationCount: true,
         createdAt: true,
       },
       with: {
@@ -97,6 +108,7 @@ export default async function BrowsePage({
     tags: solution.solutionTags
       .map((link) => link.tag?.name)
       .filter((name): name is string => Boolean(name)),
+    confirmations: solution.confirmationCount,
   }))
 
   const availableTags = tagRows.map((row) => row.name)
