@@ -10,6 +10,7 @@ import { headers } from "next/headers"
 import { parserModel } from "@/lib/ai"
 import { ajParse } from "@/lib/arcjet"
 import { auth } from "@/lib/auth"
+import { bumpSearchVersion } from "@/lib/search"
 import {
   createSolutionSchema,
   normalizeTags,
@@ -173,6 +174,7 @@ export async function createSolutionAction(
           .set({ status: "published", updatedAt: new Date() })
           .where(eq(schema.solutions.id, existing[0].id))
         revalidateSolutionViews(existing[0].id)
+        await bumpSearchVersion()
       }
       return { ok: true, id: existing[0].id }
     }
@@ -198,6 +200,8 @@ export async function createSolutionAction(
     await insertSnippets(solution.id, value.codeSnippets)
 
     revalidateSolutionViews()
+    // A newly published solution must show up in search immediately.
+    if (status === "published") await bumpSearchVersion()
     return { ok: true, id: solution.id }
   } catch (error) {
     console.error("[createSolution] insert failed:", error)
@@ -271,6 +275,8 @@ export async function updateSolutionAction(
     await insertSnippets(value.solutionId, value.codeSnippets)
 
     revalidateSolutionViews(value.solutionId)
+    // Edits change content/visibility, so search results may now differ.
+    await bumpSearchVersion()
     return { ok: true, id: value.solutionId }
   } catch (error) {
     console.error("[updateSolution] update failed:", error)

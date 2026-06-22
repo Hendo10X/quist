@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm"
 import { db, schema } from "@workspace/db"
 
 import { auth } from "@/lib/auth"
+import { bumpSearchVersion } from "@/lib/search"
 
 type DeleteResult = { ok: true } | { ok: false; error: string }
 
@@ -38,6 +39,8 @@ export async function deleteSolutionAction(
     revalidatePath("/dashboard")
     revalidatePath("/profile")
     revalidatePath("/browse")
+    // A deleted solution must drop out of search immediately.
+    await bumpSearchVersion()
     return { ok: true }
   } catch (error) {
     console.error("[deleteSolution] delete failed:", error)

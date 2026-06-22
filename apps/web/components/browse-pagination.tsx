@@ -12,14 +12,15 @@ import { cn } from "@workspace/ui/lib/utils"
 type FilterParams = {
   model?: string
   tag?: string
-  sort?: "newest" | "oldest"
+  sort?: "newest" | "oldest" | "top"
 }
 
 function buildHref(page: number, params: FilterParams): string {
   const query = new URLSearchParams()
   if (params.model) query.set("model", params.model)
   if (params.tag) query.set("tag", params.tag)
-  if (params.sort === "oldest") query.set("sort", "oldest")
+  // "newest" is the default, so only non-default sorts need to be carried.
+  if (params.sort && params.sort !== "newest") query.set("sort", params.sort)
   if (page > 1) query.set("page", String(page))
   const queryString = query.toString()
   return queryString ? `/browse?${queryString}` : "/browse"

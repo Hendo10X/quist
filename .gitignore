@@ -44,3 +44,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude code / agent tooling (local config + vendored skills, not needed in the repo)
+.claude/
+.agents/skills/

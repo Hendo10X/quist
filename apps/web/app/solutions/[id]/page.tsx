@@ -11,6 +11,7 @@ import { cn } from "@workspace/ui/lib/utils"
 
 import { BackButton } from "@/components/back-button"
 import { CodeBlock } from "@/components/code-block"
+import { ConfirmButton } from "@/components/confirm-button"
 import { ModelBadge } from "@/components/model-badge"
 import { MotionReveal } from "@/components/motion"
 import { SiteHeader } from "@/components/site-header"
@@ -43,6 +44,17 @@ export default async function SolutionPage({
   const isOwner = session?.user.id === solution.userId
   // Drafts are visible only to their author.
   if (solution.status === "draft" && !isOwner) notFound()
+
+  // Has the current (non-author) user already confirmed this worked?
+  let confirmed = false
+  if (session && !isOwner) {
+    const mine = await db.query.solutionConfirmations.findFirst({
+      where: (table, { and, eq }) =>
+        and(eq(table.solutionId, solution.id), eq(table.userId, session.user.id)),
+      columns: { solutionId: true },
+    })
+    confirmed = Boolean(mine)
+  }
 
   const tags = solution.solutionTags
     .map((link) => link.tag?.name)
@@ -102,6 +114,18 @@ export default async function SolutionPage({
             </time>
           </div>
         </MotionReveal>
+
+        {solution.status === "published" ? (
+          <MotionReveal delay={0.03}>
+            <ConfirmButton
+              solutionId={solution.id}
+              initialConfirmed={confirmed}
+              initialCount={solution.confirmationCount}
+              canConfirm={Boolean(session) && !isOwner}
+              signedIn={Boolean(session)}
+            />
+          </MotionReveal>
+        ) : null}
 
         <MotionReveal delay={0.06} className="flex flex-col gap-2">
           <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">

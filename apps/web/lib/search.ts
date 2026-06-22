@@ -11,11 +11,35 @@ export type SearchResult = {
   sourceModel: SourceModel
   createdAt: string
   tags: string[]
+  confirmations: number
   rank: number
 }
 
 const CACHE_TTL_SECONDS = 60 * 60 * 24 // 24 hours
 const MAX_RESULTS = 20
+const VERSION_KEY = "search:version"
+
+/**
+ * Cache keys are namespaced by a version counter. Any mutation that changes
+ * what search should return (publish, edit, unpublish, delete) bumps the
+ * version, which instantly orphans every old cache entry without scanning keys.
+ */
+async function searchVersion(): Promise<string> {
+  try {
+    const version = await getRedis().get<number>(VERSION_KEY)
+    return String(version ?? 0)
+  } catch {
+    return "0"
+  }
+}
+
+export async function bumpSearchVersion(): Promise<void> {
+  try {
+    await getRedis().incr(VERSION_KEY)
+  } catch {
+    // Redis unavailable — searches just fall through to the DB until it's back.
+  }
+}
 
 /**
  * Turn free-text into a safe `to_tsquery` string: keep alphanumerics, prefix-
@@ -50,8 +74,8 @@ export async function searchSolutions(query: string): Promise<SearchResult[]> {
   const tsQueryString = toTsQuery(normalized)
   if (!tsQueryString) return []
 
-  // 1. Cache lookup.
-  const cacheKey = `search:${normalized}`
+  // 1. Cache lookup, namespaced by the current search version.
+  const cacheKey = `search:v${await searchVersion()}:${normalized}`
   const cached = await cacheGet(cacheKey)
   if (cached) return cached
 
@@ -65,6 +89,7 @@ export async function searchSolutions(query: string): Promise<SearchResult[]> {
       preview: sql<string>`left(${schema.solutions.answerBody}, 200)`,
       sourceModel: schema.solutions.sourceModel,
       createdAt: schema.solutions.createdAt,
+      confirmations: schema.solutions.confirmationCount,
       tags: sql<
         string[]
       >`coalesce((select array_agg(t.name) from solution_tags st join tags t on t.id = st.tag_id where st.solution_id = ${schema.solutions.id}), '{}')`,
@@ -74,7 +99,10 @@ export async function searchSolutions(query: string): Promise<SearchResult[]> {
     .where(
       sql`${schema.solutions.searchVector} @@ ${tsQuery} and ${schema.solutions.status} = 'published'`
     )
-    .orderBy(sql`ts_rank(${schema.solutions.searchVector}, ${tsQuery}) desc`)
+    // Text relevance first, then break ties toward more-confirmed solutions.
+    .orderBy(
+      sql`ts_rank(${schema.solutions.searchVector}, ${tsQuery}) desc, ${schema.solutions.confirmationCount} desc`
+    )
     .limit(MAX_RESULTS)
 
   const results: SearchResult[] = rows.map((row) => ({
@@ -84,6 +112,7 @@ export async function searchSolutions(query: string): Promise<SearchResult[]> {
     sourceModel: row.sourceModel,
     createdAt: row.createdAt.toISOString(),
     tags: row.tags ?? [],
+    confirmations: Number(row.confirmations),
     rank: Number(row.rank),
   }))
 

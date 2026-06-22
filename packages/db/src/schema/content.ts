@@ -49,6 +49,9 @@ export const solutions = pgTable(
     sourceModel: sourceModel("source_model").notNull().default("other"),
     rawTranscript: text("raw_transcript").notNull(),
     status: solutionStatus("status").notNull().default("published"),
+    // Denormalized count of "worked for me" confirmations, kept in sync by the
+    // toggle action. Backed by the solution_confirmations join table below.
+    confirmationCount: integer("confirmation_count").notNull().default(0),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     // Precomputed, STORED weighted search vector: title => A, bodies => B.
@@ -95,6 +98,23 @@ export const codeSnippets = pgTable("code_snippets", {
   position: integer("position").notNull().default(0),
 })
 
+// One row per (user, solution) the user has confirmed "worked for me". The
+// composite PK enforces at most one confirmation per user per solution; the
+// aggregate lives denormalized on solutions.confirmationCount.
+export const solutionConfirmations = pgTable(
+  "solution_confirmations",
+  {
+    solutionId: uuid("solution_id")
+      .notNull()
+      .references(() => solutions.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.solutionId, table.userId] })]
+)
+
 export const solutionsRelations = relations(solutions, ({ one, many }) => ({
   author: one(user, {
     fields: [solutions.userId],
@@ -102,7 +122,22 @@ export const solutionsRelations = relations(solutions, ({ one, many }) => ({
   }),
   solutionTags: many(solutionTags),
   codeSnippets: many(codeSnippets),
+  confirmations: many(solutionConfirmations),
 }))
+
+export const solutionConfirmationsRelations = relations(
+  solutionConfirmations,
+  ({ one }) => ({
+    solution: one(solutions, {
+      fields: [solutionConfirmations.solutionId],
+      references: [solutions.id],
+    }),
+    user: one(user, {
+      fields: [solutionConfirmations.userId],
+      references: [user.id],
+    }),
+  })
+)
 
 export const tagsRelations = relations(tags, ({ many }) => ({
   solutionTags: many(solutionTags),

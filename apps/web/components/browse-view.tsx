@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   CarouselHorizontalIcon,
+  CheckmarkBadge02Icon,
   GridIcon,
   ListViewIcon,
 } from "@hugeicons/core-free-icons"
@@ -26,6 +27,26 @@ export type BrowseItem = {
   author: string
   date: string
   tags: string[]
+  confirmations: number
+}
+
+// "Worked for me" tally shown in a card's meta line (hidden at zero).
+function ConfirmMeta({ count }: { count: number }) {
+  if (count <= 0) return null
+  return (
+    <span
+      className="inline-flex items-center gap-1 tabular-nums text-foreground/70"
+      title={`${count} confirmed this worked`}
+    >
+      <span aria-hidden>·</span>
+      <HugeiconsIcon
+        icon={CheckmarkBadge02Icon}
+        className="size-3"
+        strokeWidth={2}
+      />
+      {count}
+    </span>
+  )
 }
 
 const VIEWS = [
@@ -133,6 +154,7 @@ function CardBody({ item }: { item: BrowseItem }) {
         <span aria-hidden>·</span>
         <span className="tabular-nums">{item.date}</span>
         {item.tags.length > 0 ? <span>· {item.tags.join(", ")}</span> : null}
+        <ConfirmMeta count={item.confirmations} />
       </div>
     </>
   )
@@ -229,6 +251,7 @@ function StackView({ items }: { items: BrowseItem[] }) {
               <span className="truncate">{item.author}</span>
               <span aria-hidden>·</span>
               <span className="tabular-nums">{item.date}</span>
+              <ConfirmMeta count={item.confirmations} />
               {item.tags.length > 0 ? (
                 <span className="w-full truncate">{item.tags.join(", ")}</span>
               ) : null}
