@@ -115,6 +115,22 @@ export const solutionConfirmations = pgTable(
   (table) => [primaryKey({ columns: [table.solutionId, table.userId] })]
 )
 
+// Private "save for later" bookmarks. One row per (user, solution); listed on
+// the user's /saved page. No public aggregate — bookmarks aren't shown to others.
+export const solutionBookmarks = pgTable(
+  "solution_bookmarks",
+  {
+    solutionId: uuid("solution_id")
+      .notNull()
+      .references(() => solutions.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.solutionId, table.userId] })]
+)
+
 export const solutionsRelations = relations(solutions, ({ one, many }) => ({
   author: one(user, {
     fields: [solutions.userId],
@@ -123,6 +139,7 @@ export const solutionsRelations = relations(solutions, ({ one, many }) => ({
   solutionTags: many(solutionTags),
   codeSnippets: many(codeSnippets),
   confirmations: many(solutionConfirmations),
+  bookmarks: many(solutionBookmarks),
 }))
 
 export const solutionConfirmationsRelations = relations(
@@ -134,6 +151,20 @@ export const solutionConfirmationsRelations = relations(
     }),
     user: one(user, {
       fields: [solutionConfirmations.userId],
+      references: [user.id],
+    }),
+  })
+)
+
+export const solutionBookmarksRelations = relations(
+  solutionBookmarks,
+  ({ one }) => ({
+    solution: one(solutions, {
+      fields: [solutionBookmarks.solutionId],
+      references: [solutions.id],
+    }),
+    user: one(user, {
+      fields: [solutionBookmarks.userId],
       references: [user.id],
     }),
   })

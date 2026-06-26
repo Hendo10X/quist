@@ -4,7 +4,8 @@ import { notFound } from "next/navigation"
 import { Edit02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import { db } from "@workspace/db"
+import { db, schema } from "@workspace/db"
+import { and, desc, eq, ne, sql } from "drizzle-orm"
 import { Badge } from "@workspace/ui/components/badge"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
@@ -14,6 +15,8 @@ import { CodeBlock } from "@/components/code-block"
 import { ConfirmButton } from "@/components/confirm-button"
 import { ModelBadge } from "@/components/model-badge"
 import { MotionReveal } from "@/components/motion"
+import { SaveButton } from "@/components/save-button"
+import { ShareLinkButton } from "@/components/share-link-button"
 import { SiteHeader } from "@/components/site-header"
 import { auth } from "@/lib/auth"
 import { highlightCode } from "@/lib/highlight"
@@ -56,6 +59,39 @@ export default async function SolutionPage({
     confirmed = Boolean(mine)
   }
 
+  // Has the current user bookmarked this?
+  let saved = false
+  if (session) {
+    const mark = await db.query.solutionBookmarks.findFirst({
+      where: (table, { and, eq }) =>
+        and(eq(table.solutionId, solution.id), eq(table.userId, session.user.id)),
+      columns: { solutionId: true },
+    })
+    saved = Boolean(mark)
+  }
+
+  // Other published solutions that share at least one tag — most-confirmed first.
+  const related = await db
+    .select({
+      id: schema.solutions.id,
+      title: schema.solutions.questionTitle,
+      sourceModel: schema.solutions.sourceModel,
+      confirmations: schema.solutions.confirmationCount,
+    })
+    .from(schema.solutions)
+    .where(
+      and(
+        eq(schema.solutions.status, "published"),
+        ne(schema.solutions.id, solution.id),
+        sql`exists (select 1 from solution_tags st where st.solution_id = ${schema.solutions.id} and st.tag_id in (select tag_id from solution_tags where solution_id = ${solution.id}))`
+      )
+    )
+    .orderBy(
+      desc(schema.solutions.confirmationCount),
+      desc(schema.solutions.createdAt)
+    )
+    .limit(4)
+
   const tags = solution.solutionTags
     .map((link) => link.tag?.name)
     .filter((name): name is string => Boolean(name))
@@ -76,15 +112,29 @@ export default async function SolutionPage({
       <article className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
         <div className="flex items-center justify-between gap-2">
           <BackButton className="-ml-2" />
-          {isOwner ? (
-            <Link
-              href={`/solutions/${solution.id}/edit`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
-              <HugeiconsIcon icon={Edit02Icon} strokeWidth={2} />
-              Edit
-            </Link>
-          ) : null}
+          <div className="flex items-center gap-2">
+            {solution.status === "published" ? (
+              <>
+                <ShareLinkButton path={`/solutions/${solution.id}`} />
+                <SaveButton
+                  solutionId={solution.id}
+                  initialSaved={saved}
+                  signedIn={Boolean(session)}
+                />
+              </>
+            ) : null}
+            {isOwner ? (
+              <Link
+                href={`/solutions/${solution.id}/edit`}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" })
+                )}
+              >
+                <HugeiconsIcon icon={Edit02Icon} strokeWidth={2} />
+                Edit
+              </Link>
+            ) : null}
+          </div>
         </div>
         <MotionReveal className="flex flex-col gap-3">
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
@@ -166,6 +216,35 @@ export default async function SolutionPage({
               </Badge>
             ))}
           </div>
+        ) : null}
+
+        {related.length > 0 ? (
+          <section className="flex flex-col gap-3 border-t border-border pt-6">
+            <h2 className="font-mono text-[0.625rem] tracking-widest text-muted-foreground uppercase">
+              Related solutions
+            </h2>
+            <div className="flex flex-col divide-y divide-border overflow-hidden rounded-lg border border-border">
+              {related.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/solutions/${item.id}`}
+                  className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
+                >
+                  <span className="line-clamp-1 text-sm font-medium">
+                    {item.title}
+                  </span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {item.confirmations > 0 ? (
+                      <span className="text-[0.625rem] text-muted-foreground tabular-nums">
+                        {item.confirmations} confirmed
+                      </span>
+                    ) : null}
+                    <ModelBadge model={item.sourceModel} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
         ) : null}
       </article>
     </div>

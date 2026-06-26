@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   ArrowDown01Icon,
+  Bookmark02Icon,
   DashboardSquare01Icon,
   Logout01Icon,
   UserIcon,
@@ -48,12 +49,12 @@ export function UserMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="group flex items-center gap-2 rounded-full py-0.5 pr-1.5 pl-0.5 text-xs text-foreground transition-colors outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/30 data-[popup-open]:bg-muted/60">
+      <DropdownMenuTrigger className="group flex items-center gap-2 rounded-full py-0.5 pr-1.5 pl-0.5 text-xs text-foreground transition-colors outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/30 data-popup-open:bg-muted/60">
         <UserAvatar name={name} seed={seed} image={image} />
         <span className="max-w-32 truncate">{name}</span>
         <HugeiconsIcon
           icon={ArrowDown01Icon}
-          className="size-3.5 text-muted-foreground transition-transform duration-150 group-data-[popup-open]:rotate-180"
+          className="size-3.5 text-muted-foreground transition-transform duration-150 group-data-popup-open:rotate-180"
           strokeWidth={2}
         />
       </DropdownMenuTrigger>
@@ -75,6 +76,10 @@ export function UserMenu({
         <DropdownMenuLinkItem render={<Link href="/dashboard" />}>
           <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />
           My solutions
+        </DropdownMenuLinkItem>
+        <DropdownMenuLinkItem render={<Link href="/saved" />}>
+          <HugeiconsIcon icon={Bookmark02Icon} strokeWidth={2} />
+          Saved
         </DropdownMenuLinkItem>
 
         <DropdownMenuSeparator />
