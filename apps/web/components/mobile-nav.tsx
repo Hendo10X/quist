@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   ArrowDown01Icon,
+  Bookmark02Icon,
   Cancel01Icon,
   Menu01Icon,
 } from "@hugeicons/core-free-icons"
@@ -93,11 +94,11 @@ export function MobileNav({
                 Tags
                 <HugeiconsIcon
                   icon={ArrowDown01Icon}
-                  className="size-4 transition-transform duration-200 group-data-[panel-open]:rotate-180"
+                  className="size-4 transition-transform duration-200 group-data-panel-open:rotate-180"
                   strokeWidth={2}
                 />
               </Collapsible.Trigger>
-              <Collapsible.Panel className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0">
+              <Collapsible.Panel className="h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-5 px-2 pt-2 pb-1">
                   {TAG_GROUPS.map((group) => (
                     <div key={group.label} className="flex flex-col gap-2.5">
@@ -132,13 +133,29 @@ export function MobileNav({
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-muted/40"
               >
-                <UserAvatar name={user.name} seed={user.id} image={user.image} />
+                <UserAvatar
+                  name={user.name}
+                  seed={user.id}
+                  image={user.image}
+                />
                 <div className="flex flex-col">
                   <span className="text-sm text-foreground">{user.name}</span>
                   <span className="text-xs text-muted-foreground">
                     View profile
                   </span>
                 </div>
+              </Link>
+              <Link
+                href="/saved"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+              >
+                <HugeiconsIcon
+                  icon={Bookmark02Icon}
+                  className="size-4"
+                  strokeWidth={2}
+                />
+                Saved
               </Link>
               <SignOutButton />
             </div>

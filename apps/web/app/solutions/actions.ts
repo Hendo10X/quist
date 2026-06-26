@@ -92,3 +92,46 @@ export async function toggleConfirmationAction(
     return { ok: false, error: "Something went wrong. Please try again." }
   }
 }
+
+type BookmarkResult =
+  | { ok: true; saved: boolean }
+  | { ok: false; error: string }
+
+// Toggle the signed-in user's private bookmark on a solution.
+export async function toggleBookmarkAction(
+  solutionId: string
+): Promise<BookmarkResult> {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) {
+    return { ok: false, error: "You must be signed in to save a solution." }
+  }
+
+  try {
+    const removed = await db
+      .delete(schema.solutionBookmarks)
+      .where(
+        and(
+          eq(schema.solutionBookmarks.solutionId, solutionId),
+          eq(schema.solutionBookmarks.userId, session.user.id)
+        )
+      )
+      .returning({ solutionId: schema.solutionBookmarks.solutionId })
+
+    let saved: boolean
+    if (removed.length > 0) {
+      saved = false
+    } else {
+      await db
+        .insert(schema.solutionBookmarks)
+        .values({ solutionId, userId: session.user.id })
+        .onConflictDoNothing()
+      saved = true
+    }
+
+    revalidatePath("/saved")
+    return { ok: true, saved }
+  } catch (error) {
+    console.error("[toggleBookmark] failed:", error)
+    return { ok: false, error: "Something went wrong. Please try again." }
+  }
+}
