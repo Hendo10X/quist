@@ -1,6 +1,5 @@
 import { db } from "@workspace/db"
 
-import { modelLabel } from "@/components/model-badge"
 import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "@/lib/og"
 
 const UUID_RE =
@@ -20,37 +19,14 @@ export default async function Image({
   const solution = UUID_RE.test(id)
     ? await db.query.solutions.findFirst({
         where: (table, { eq }) => eq(table.id, id),
-        columns: {
-          questionTitle: true,
-          sourceModel: true,
-          confirmationCount: true,
-          status: true,
-        },
-        with: { author: { columns: { name: true } } },
+        columns: { questionTitle: true, status: true },
       })
     : undefined
 
-  // Drafts are private — never leak their title into a share card.
+  // Drafts are private, so never leak their title into a share card.
   if (!solution || solution.status !== "published") {
-    return renderOgImage({
-      eyebrow: "Solution",
-      title: "The search engine for AI-solved problems.",
-    })
+    return renderOgImage({ title: "The search engine for AI-solved problems." })
   }
 
-  const meta = [
-    `Solved with ${modelLabel(solution.sourceModel)}`,
-    solution.confirmationCount > 0
-      ? `${solution.confirmationCount} confirmed`
-      : null,
-  ]
-    .filter(Boolean)
-    .join("  ·  ")
-
-  return renderOgImage({
-    eyebrow: "Solution",
-    title: solution.questionTitle,
-    description: solution.author?.name ? `by ${solution.author.name}` : undefined,
-    meta,
-  })
+  return renderOgImage({ title: solution.questionTitle })
 }

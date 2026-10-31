@@ -3,24 +3,14 @@ import { join } from "node:path"
 import { ImageResponse } from "next/og"
 
 // Shared Open Graph card. Mirrors the dark theme tokens in globals.css
-// (--background / --foreground / --muted-foreground) — text only, no
-// gradients or borders.
+// (--background / --foreground). Just the title: no subtext, gradients
+// or borders.
 export const OG_SIZE = { width: 1200, height: 630 }
 export const OG_CONTENT_TYPE = "image/png"
 
 const COLORS = {
   background: "#0a0a0a",
   foreground: "#fafafa",
-  muted: "#a1a1a1",
-}
-
-type OgCardProps = {
-  // Small uppercase label above the title, e.g. "Browse".
-  eyebrow?: string
-  title: string
-  description?: string
-  // Bottom-right detail, e.g. "Claude · 12 confirmed".
-  meta?: string
 }
 
 function truncate(text: string, max: number) {
@@ -34,12 +24,7 @@ function titleSize(title: string) {
   return 88
 }
 
-export async function renderOgImage({
-  eyebrow,
-  title,
-  description,
-  meta,
-}: OgCardProps) {
+export async function renderOgImage({ title }: { title: string }) {
   const display = await readFile(
     join(process.cwd(), "public/fonts/ppmondwest-regular.otf")
   )
@@ -53,68 +38,28 @@ export async function renderOgImage({
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
+          alignItems: "center",
           padding: 80,
           background: COLORS.background,
           color: COLORS.foreground,
         }}
       >
+        {/* Word-by-word so Satori never splits hyphenated words ("AI-solved"). */}
         <div
           style={{
             display: "flex",
-            fontSize: 22,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            color: COLORS.muted,
+            flexWrap: "wrap",
+            columnGap: fontSize * 0.2,
+            fontFamily: "Mondwest",
+            fontSize,
+            lineHeight: 1.05,
+            letterSpacing: "-0.02em",
+            maxWidth: 1000,
           }}
         >
-          {eyebrow ? `Quist  /  ${eyebrow}` : "Quist"}
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-          {/* Word-by-word so Satori never splits hyphenated words ("AI-solved"). */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              columnGap: fontSize * 0.2,
-              fontFamily: "Mondwest",
-              fontSize,
-              lineHeight: 1.05,
-              letterSpacing: "-0.02em",
-              maxWidth: 1000,
-            }}
-          >
-            {safeTitle.split(/\s+/).map((word, i) => (
-              <span key={i}>{word}</span>
-            ))}
-          </div>
-          {description ? (
-            <div
-              style={{
-                display: "flex",
-                fontSize: 30,
-                lineHeight: 1.4,
-                color: COLORS.muted,
-                maxWidth: 820,
-              }}
-            >
-              {truncate(description, 140)}
-            </div>
-          ) : null}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: 22,
-            color: COLORS.muted,
-          }}
-        >
-          <span>Confirmed AI solutions</span>
-          {meta ? <span>{meta}</span> : null}
+          {safeTitle.split(/\s+/).map((word, i) => (
+            <span key={i}>{word}</span>
+          ))}
         </div>
       </div>
     ),
