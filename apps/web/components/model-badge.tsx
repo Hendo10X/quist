@@ -17,6 +17,10 @@ const MODEL: Record<SourceModel, { label: string; className: string }> = {
   other: { label: "Other", className: "model-badge model-other" },
 }
 
+export function modelLabel(model: SourceModel) {
+  return MODEL[model].label
+}
+
 export function ModelBadge({
   model,
   className,

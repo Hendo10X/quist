@@ -8,9 +8,16 @@ import { Toaster } from "@/components/toaster"
 import { cn } from "@workspace/ui/lib/utils"
 
 export const metadata: Metadata = {
+  // Resolves the generated opengraph-image URLs to absolute links.
+  metadataBase: process.env.BETTER_AUTH_URL
+    ? new URL(process.env.BETTER_AUTH_URL)
+    : undefined,
   title: "Quist — search engine for AI-solved problems",
   description:
     "A searchable knowledge base of real, confirmed AI conversations that solved developer problems.",
+  openGraph: { siteName: "Quist", type: "website" },
+  // X/Twitter reuses the og:image; this just asks for the large card.
+  twitter: { card: "summary_large_image" },
   manifest: "/site.webmanifest",
   icons: {
     // favicon.ico is auto-detected from app/; add the iOS + PWA icons here.
