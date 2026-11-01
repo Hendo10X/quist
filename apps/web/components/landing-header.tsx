@@ -18,7 +18,7 @@ const LANDING_LINKS: NavLink[] = [
 // never the signed-in app nav.
 export function LandingHeader() {
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/85 px-6 backdrop-blur">
+    <header className="sticky top-0 z-50 flex h-14 items-center justify-between bg-background px-6">
       <div className="flex items-center gap-6">
         <Link
           href="/"

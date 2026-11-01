@@ -53,9 +53,6 @@ export default function Page() {
         {/* Hero — the only section with the dot-grid background */}
         <section className="dot-grid flex flex-col items-center justify-center px-6 pt-20 pb-8 text-center sm:pt-28">
           <div className="flex max-w-2xl flex-col items-center gap-6">
-            <span className="rounded-full border border-border bg-background/60 px-3 py-1 font-mono text-[0.625rem] tracking-widest text-muted-foreground uppercase backdrop-blur">
-              Confirmed AI solutions
-            </span>
             <h1 className="font-display text-5xl tracking-tight text-balance sm:text-6xl">
               The search engine for AI-solved problems.
             </h1>
@@ -101,10 +98,7 @@ export default function Page() {
                   key={logo.alt}
                   src={logo.src}
                   alt={logo.alt}
-                  className={cn(
-                    "h-6 w-auto opacity-85 transition-opacity hover:opacity-100",
-                    logo.invert && "dark:invert"
-                  )}
+                  className={cn("h-6 w-auto", logo.invert && "dark:invert")}
                 />
               ))}
             </div>
@@ -178,13 +172,11 @@ export default function Page() {
                 key={step.title}
                 className="flex flex-col items-center gap-3"
               >
-                <div className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-foreground">
-                  <HugeiconsIcon
-                    icon={step.icon}
-                    className="size-5"
-                    strokeWidth={1.8}
-                  />
-                </div>
+                <HugeiconsIcon
+                  icon={step.icon}
+                  className="mb-1 size-6"
+                  strokeWidth={1.8}
+                />
                 <h3 className="text-sm font-semibold">{step.title}</h3>
                 <p className="max-w-[16rem] text-xs leading-relaxed text-muted-foreground">
                   {step.body}

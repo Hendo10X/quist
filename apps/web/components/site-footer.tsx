@@ -6,7 +6,7 @@ import { SystemStatus } from "@/components/system-status"
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border px-6 py-10">
+    <footer className="px-6 py-10">
       <div className="mx-auto flex max-w-5xl flex-col gap-6 text-xs text-muted-foreground">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <Link
@@ -44,7 +44,7 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-border pt-6 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
           <SystemStatus />
           <span>© 2026 Quist</span>
         </div>
